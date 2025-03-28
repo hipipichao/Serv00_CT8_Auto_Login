@@ -11,17 +11,21 @@ import os
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 
+
 def format_to_iso(date):
     return date.strftime('%Y-%m-%d %H:%M:%S')
 
+
 async def delay_time(ms):
     await asyncio.sleep(ms / 1000)
+
 
 # 全局浏览器实例
 browser = None
 
 # telegram消息
 message = ""
+
 
 async def login(username, password, panel):
     global browser
@@ -66,11 +70,13 @@ async def login(username, password, panel):
         if page:
             await page.close()
 
+
 async def shutdown_browser():
     global browser
     if browser:
         await browser.close()
         browser = None
+
 
 async def main():
     global message
@@ -98,7 +104,7 @@ async def main():
         now_beijing = format_to_iso(datetime.utcnow() + timedelta(hours=8))
         status_icon = "✅" if is_logged_in else "❌"
         status_text = "登录成功" if is_logged_in else "登录失败"
-        
+
         message += (
             f"🔹 *服务商*: `{serviceName}`\n"  # 保持变量引用
             f"👤 *账号*: `{username}`\n"
@@ -109,15 +115,23 @@ async def main():
 
         delay = random.randint(1000, 8000)
         await delay_time(delay)
-    
+
     # 添加报告尾部
     message += "\n🏁 *所有账号操作已完成*"
-    await send_telegram_message(message)
+    await send_wx_message(message)
     print('所有账号登录完成！')
     print(message)
     await shutdown_browser()
 
-async def send_telegram_message(message):
+
+async def get_token():
+    url = 'https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid=ww04276e7ac1b9fe59&corpsecret=pvp1-BUSpxgrz1iKIimRU4CPsGtk63-mUFuGqYb66WE'
+    resp = requests.get(url)
+    ACCESS_TOKEN = resp.json()['access_token']
+    return "ZhaiYaChao", ACCESS_TOKEN
+
+
+async def send_wx_message(message):
     formatted_message = f"""
 📨 *Serv00 & CT8 保号脚本运行报告*
 ━━━━━━━━━━━━━━━━━━━━
@@ -127,23 +141,27 @@ async def send_telegram_message(message):
 
 {message}
 """
-
-    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-    payload = {
-        'chat_id': TELEGRAM_CHAT_ID,
-        'text': formatted_message,
-        'parse_mode': 'Markdown',
+    USER, ACCESS_TOKEN = get_token()
+    url = 'https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token={}'.format(ACCESS_TOKEN)
+    data = {
+        "touser": USER,
+        "msgtype": "text",
+        "agentid": 1000004,
+        "text": {
+            "content": formatted_message
+        },
+        "safe": 0,
+        "enable_id_trans": 0,
+        "enable_duplicate_check": 0,
+        "duplicate_check_interval": 1800
     }
-    headers = {
-        'Content-Type': 'application/json'
-    }
-
     try:
-        response = requests.post(url, json=payload, headers=headers)
+        response = requests.post(url, json=data)
         if response.status_code != 200:
-            print(f"发送消息到Telegram失败: {response.text}")
+            print(f"发送消息到企业微信失败: {response.text}")
     except Exception as e:
-        print(f"发送消息到Telegram时出错: {e}")
+        print(f"发送消息到企业微信时出错: {e}")
+
 
 if __name__ == '__main__':
     asyncio.run(main())
