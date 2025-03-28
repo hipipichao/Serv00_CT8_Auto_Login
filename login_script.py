@@ -118,50 +118,9 @@ async def main():
 
     # 添加报告尾部
     message += "\n🏁 *所有账号操作已完成*"
-    await send_wx_message(message)
     print('所有账号登录完成！')
     print(message)
     await shutdown_browser()
-
-
-async def get_token():
-    url = 'https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid=ww04276e7ac1b9fe59&corpsecret=pvp1-BUSpxgrz1iKIimRU4CPsGtk63-mUFuGqYb66WE'
-    resp = requests.get(url)
-    ACCESS_TOKEN = resp.json()['access_token']
-    return ACCESS_TOKEN
-
-
-async def send_wx_message(message):
-    formatted_message = f"""
-📨 *Serv00 & CT8 保号脚本运行报告*
-━━━━━━━━━━━━━━━━━━━━
-🕘 北京时间: `{format_to_iso(datetime.utcnow() + timedelta(hours=8))}`
-🌐 UTC时间: `{format_to_iso(datetime.utcnow())}`
-━━━━━━━━━━━━━━━━━━━━
-
-{message}
-"""
-    ACCESS_TOKEN = get_token()
-    url = 'https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token={}'.format(ACCESS_TOKEN)
-    data = {
-        "touser": "ZhaiYaChao",
-        "msgtype": "text",
-        "agentid": 1000004,
-        "text": {
-            "content": formatted_message
-        },
-        "safe": 0,
-        "enable_id_trans": 0,
-        "enable_duplicate_check": 0,
-        "duplicate_check_interval": 1800
-    }
-    try:
-        response = requests.post(url, json=data)
-        if response.status_code != 200:
-            print(f"发送消息到企业微信失败: {response.text}")
-    except Exception as e:
-        print(f"发送消息到企业微信时出错: {e}")
-
 
 if __name__ == '__main__':
     asyncio.run(main())
