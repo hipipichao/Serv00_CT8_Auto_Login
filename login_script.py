@@ -128,7 +128,7 @@ async def get_token():
     url = 'https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid=ww04276e7ac1b9fe59&corpsecret=pvp1-BUSpxgrz1iKIimRU4CPsGtk63-mUFuGqYb66WE'
     resp = requests.get(url)
     ACCESS_TOKEN = resp.json()['access_token']
-    return "ZhaiYaChao", ACCESS_TOKEN
+    return ACCESS_TOKEN
 
 
 async def send_wx_message(message):
@@ -141,10 +141,10 @@ async def send_wx_message(message):
 
 {message}
 """
-    USER, ACCESS_TOKEN = get_token()
+    ACCESS_TOKEN = get_token()
     url = 'https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token={}'.format(ACCESS_TOKEN)
     data = {
-        "touser": USER,
+        "touser": "ZhaiYaChao",
         "msgtype": "text",
         "agentid": 1000004,
         "text": {
