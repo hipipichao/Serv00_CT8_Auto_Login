@@ -114,6 +114,7 @@ async def main():
     message += "\n🏁 *所有账号操作已完成*"
     await send_telegram_message(message)
     print('所有账号登录完成！')
+    print(message)
     await shutdown_browser()
 
 async def send_telegram_message(message):
